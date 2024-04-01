@@ -1,0 +1,22 @@
+package coe528.project;
+import javax.swing.JOptionPane;
+
+
+public class GoldCustomer extends BankAccount {
+      
+      @Override    
+      public void onlinePurchase(int amount){
+          if(balance >= amount + 10){
+               balance -= (amount + 10);
+                     JOptionPane.showMessageDialog(null, "Gold Member Purchase Confirmation", "You have made a purchase of $" + amount + "\nand with no additional service charge\nthe total cost is $" + amount, JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(null, "Error Message", "Insufficient funds to make a purchase of $" + amount, JOptionPane.ERROR_MESSAGE);
+        }
+    }
+   
+      @Override
+      public String getCustomerLevel(){
+          return "You are a Gold Member";
+      }
+    
+}
