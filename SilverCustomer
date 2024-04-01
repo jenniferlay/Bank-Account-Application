@@ -1,0 +1,19 @@
+package coe528.project;
+import javax.swing.JOptionPane;
+
+public class SilverCustomer extends BankAccount {
+    
+    @Override
+    public void onlinePurchase(int amount){
+        if(balance >= (amount + 20)){
+            balance -= (amount + 20);
+      } else {
+            JOptionPane.showMessageDialog(null, "Error Message", "Insufficient funds to make a purchase of $" + amount, JOptionPane.ERROR_MESSAGE);
+        }
+    }
+     @Override
+    public String getCustomerLevel(){
+        return "You are a Silver Member";
+    }
+    
+}
