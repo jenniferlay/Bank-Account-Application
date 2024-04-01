@@ -1,0 +1,265 @@
+package coe528.project;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+
+/**
+ *
+ * @author jenniferlay
+ */
+public class BankApplication extends Application {
+    private ListView<String> listView = new ListView<String>();
+    private Manager manager = Manager.getInstance();
+    private Label accountBalance;
+    private Label accountLevel;
+    private Customer customer;
+   
+    @Override
+    public void start(Stage primaryStage) {
+       
+        //Customer ui
+        HBox updated = new HBox(10);
+        accountBalance = new Label("Balance: 100");
+        accountLevel = new Label("You are a Silver Member");
+        updated.getChildren().addAll(accountBalance, accountLevel);
+       
+        VBox leftCustomer = new VBox(30);
+        Button withdraw = new Button("Withdraw");
+       
+       
+        Button deposit = new Button("Deposit");
+        Button OnlinePurchase = new Button("Online Purchase");
+        leftCustomer.getChildren().addAll(withdraw, deposit, OnlinePurchase);
+       
+        HBox amountCus = new HBox(10);
+        Label amountCustomer = new Label("Amount");
+        TextField cashCustomer = new TextField();
+        amountCus.getChildren().addAll(amountCustomer, cashCustomer);
+       
+        withdraw.setOnAction(value ->{
+            String amountCash = cashCustomer.getText();
+            int cashWithdraw = Integer.parseInt(amountCash);
+            if(cashWithdraw > 0){
+                customer.withdrawMoney(cashWithdraw);
+                updater();                
+            }
+        });
+       
+        deposit.setOnAction(value ->{
+            String amountCash = cashCustomer.getText();
+            int cashDeposit = Integer.parseInt(amountCash);
+            if(cashDeposit > 0){
+                customer.depositMoney(cashDeposit);
+                updater();                
+            }
+        });
+
+        OnlinePurchase.setOnAction(value ->{
+            String amountCash = cashCustomer.getText();
+            int purchase = Integer.parseInt(amountCash);
+            if(purchase > 0){
+                customer.onlinePurchase(purchase);
+                updater();                
+            }
+        });
+       
+        HBox row2 = new HBox(75);
+        Button Logout = new Button("Logout");
+
+        row2.getChildren().addAll(leftCustomer, amountCus, Logout);
+       
+
+
+       
+        VBox customerPage = new VBox(10);
+       
+       
+        customerPage.setPadding(new Insets(20));
+        customerPage.getChildren().addAll(updated, row2);
+        Scene customerWindow = new Scene(customerPage, 550, 400);
+       
+       
+       
+       
+       
+        //Login ui
+        HBox user = new HBox(10);
+        Label usernameLabel = new Label("Username:");
+        TextField usernameField = new TextField();
+        user.getChildren().addAll(usernameLabel, usernameField);
+        user.setAlignment(Pos.CENTER);
+       
+        HBox pass = new HBox(10);
+        Label passwordLabel = new Label("Password:");
+        TextField passwordField = new TextField();
+        pass.getChildren().addAll(passwordLabel, passwordField);
+        pass.setAlignment(Pos.CENTER);
+       
+        Button loginButton = new Button("Login");        
+ 
+       
+        //Manager ui
+       
+        VBox leftSide = new VBox(15);
+        HBox newPers = new HBox(10);
+        Label name2 = new Label("Username:");
+        TextField addPerson = new TextField();
+        newPers.getChildren().addAll(name2, addPerson);
+       
+        HBox pass2 = new HBox(10);
+        Label passwordLabel2 = new Label("Password:");
+        TextField passField2 = new TextField();
+        pass2.getChildren().addAll(passwordLabel2, passField2);
+       
+        Button addCustomer = new Button("New Customer");
+        addCustomer.setOnAction(value ->{
+            String customer1 = addPerson.getText();
+            String password3 = passField2.getText();
+            if(!listView.getItems().contains(customer1)){
+                listView.getItems().add(customer1);
+                manager.addCustomer(customer1, password3);
+            }
+           
+        });
+       
+        HBox deleter = new HBox(10);
+        Label personToDelete = new Label("Remove NO");
+        TextField deleterField = new TextField();
+        Button deleterButton = new Button("REMOVE");
+       
+        deleterButton.setOnAction(value ->{
+            try {
+                String toDelete = deleterField.getText();
+                Customer placeholder = new Customer(toDelete, "placeHolder");
+                manager.deleteCustomer(placeholder);
+                listView.getItems().remove(toDelete);
+            } catch (Exception ex) {
+                System.out.println("DELETE CUSTOMER DIDNT WORK");
+            }
+        });
+       
+       
+       
+        deleter.getChildren().addAll(personToDelete, deleterField);
+       
+        Button BackToLogin = new Button("Back to Login");
+        leftSide.getChildren().addAll(newPers, pass2, addCustomer, deleter, deleterButton, BackToLogin);
+        HBox managerPage = new HBox(10);
+        managerPage.getChildren().addAll(leftSide, listView);
+        managerPage.setPadding(new Insets(20));
+        managerPage.setAlignment(Pos.CENTER);
+        Scene managerWindow = new Scene(managerPage, 550, 400);  
+       
+        //Login button
+        loginButton.setOnAction(value ->{
+            try {
+                String name = usernameField.getText();
+                String pass1 = passwordField.getText();
+                if(managerLogin(name, pass1)){
+                    primaryStage.setScene(managerWindow);
+                    primaryStage.setTitle("Login");
+                    primaryStage.show();
+                }
+                else if(customerLogin(name, pass1)){
+                    primaryStage.setScene(customerWindow);
+                    primaryStage.setTitle("Customer");
+                    primaryStage.show();
+                }
+            } catch (IOException ex) {
+                System.out.println("Customer login works");
+            }
+           
+       
+        });
+       
+       
+        VBox body = new VBox(10);
+        body.setPadding(new Insets(20));
+        body.getChildren().addAll(user, pass, loginButton);
+        body.setAlignment(Pos.CENTER);
+       
+        Scene login = new Scene(body, 300, 150);
+       
+        BackToLogin.setOnAction(value ->{
+            primaryStage.setScene(login);
+            primaryStage.setTitle("Login");
+            primaryStage.show();
+       
+        });
+       
+        Logout.setOnAction(value ->{
+            primaryStage.setScene(login);
+            primaryStage.setTitle("Login");
+            primaryStage.show();
+       
+        });
+       
+        primaryStage.setTitle("Login page");
+        primaryStage.setScene(login);
+        primaryStage.show();
+    }
+
+   
+    public boolean managerLogin(String username, String password){
+        if(username.equalsIgnoreCase("admin") && password.equalsIgnoreCase("admin"))
+            return true;
+        return false;
+    }
+   
+    public boolean customerLogin(String username, String password) throws IOException{
+        File file = new File(username + ".txt");
+        if (!file.exists()){
+            return false;
+        }
+        BufferedReader reader = new BufferedReader(new FileReader(username + ".txt"));
+        String name = reader.readLine();
+        String pass = reader.readLine();
+        String balance = reader.readLine();
+        if(pass.equalsIgnoreCase(password)){
+            customer = new Customer(name, pass);
+            int cash = Integer.parseInt(balance);
+            if(cash < 100){
+                customer.withdrawMoney(100-cash);
+                BufferedWriter writer = new BufferedWriter(new FileWriter(username + ".txt"));
+                writer.write(name+ "\n" + pass + "\n" + balance);
+                writer.close();
+            }
+            else if(cash > 100){
+                customer.depositMoney(cash - 100);
+                BufferedWriter writer = new BufferedWriter(new FileWriter(username + ".txt"));
+                writer.write(name+ "\n" + pass + "\n" + balance);
+                writer.close();
+            }
+            updater();
+            return true;
+        }  
+        return false;
+    }
+   
+    public void updater(){
+        accountBalance.setText("Balance: " + customer.getBalance());
+        accountLevel.setText(customer.getCustomerLevel());
+    }
+   
+    public static void main(String[] args) {
+        launch(args);
+    }
+   
+}
